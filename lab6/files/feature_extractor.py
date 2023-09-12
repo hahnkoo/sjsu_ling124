@@ -71,8 +71,8 @@ def standard(x, sampling_rate=16000, frame_size=0.025, frame_shift=0.01, taper='
 	(2) deltas
 	(3) delta-deltas
 	"""
-	frames = window(preemphasis(x, alpha), taper=taper)
-	f, t, s = dft(frames, sampling_rate=sampling_rate)
+	frames = window(preemphasis(x, alpha), taper=taper, sampling_rate=sampling_rate, frame_size=frame_size, frame_shift=frame_shift)
+	f, t, s = dft(frames, sampling_rate=sampling_rate, frame_shift=frame_shift)
 	mfb = mel_filterbank(n_mel_filters, 0, sampling_rate/2, f)
 	ms = np.dot(mfb, s)
 	c = mfcc(ms, n_coefficients=n_mfcc)
@@ -83,7 +83,7 @@ def standard(x, sampling_rate=16000, frame_size=0.025, frame_shift=0.01, taper='
 
 if __name__ == '__main__':
 	fs, x = io.wavfile.read(sys.argv[1])
-	frames = window(preemphasis(x))
+	frames = window(preemphasis(x), sampling_rate=fs)
 	f, t, s = dft(frames, sampling_rate=fs)
 	mfb = mel_filterbank(26, 0, fs/2, f)
 	ms = np.dot(mfb, s)
