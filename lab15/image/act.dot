@@ -1,0 +1,7 @@
+digraph G {
+	rankdir=BT;
+	x1 -> h1 [label="w1"];
+	x2 -> h1 [label="w2"];
+	b1[shape="box"]
+	b1 -> h1;
+}
