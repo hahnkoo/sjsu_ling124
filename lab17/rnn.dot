@@ -1,0 +1,7 @@
+digraph G {
+	rankdir=BT;
+	input -> hidden;
+	hidden -> hidden;
+	hidden -> output;
+
+}

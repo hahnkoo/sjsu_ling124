@@ -1,0 +1,7 @@
+digraph G {
+reset [label="reset for h1"];
+x1 -> reset [label="-1"];
+x2 -> reset [label="2"];
+h1 -> reset [label="1"];
+h2 -> reset [label="-1"];
+}

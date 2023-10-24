@@ -1,0 +1,11 @@
+digraph G {
+	rankdir=BT;
+	input [label="input (one-hot)", shape="box"];
+	embedding [shape="box"];
+	hidden [label="hidden (vanilla or GRU)", shape="box"];
+	output [shape="box"];
+	input -> embedding;
+	embedding -> hidden;
+	hidden -> hidden;
+	hidden -> output;
+}

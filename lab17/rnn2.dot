@@ -1,0 +1,58 @@
+digraph G{
+	rankdir=BT;
+	node [height=.1];
+
+	subgraph{
+
+		subgraph cluster0 {
+			input0 [label="input"];
+			hidden0 [label="hidden"];
+			output0 [label="output"];
+			input0 -> hidden0 -> output0;
+			label="t=1";
+			color=none;
+		}
+
+		subgraph cluster1 {
+			input1 [label="input"];
+			hidden1 [label="hidden"];
+			output1 [label="output"];
+			input1 -> hidden1 -> output1;
+			label="t=2";
+			color=none;
+		}
+
+		subgraph cluster2 {
+			input2 [label="input"];
+			hidden2 [label="hidden"];
+			output2 [label="output"];
+			input2 -> hidden2 -> output2;
+			label="t=2";
+			color=none;
+		}
+
+		subgraph cluster3 {
+			empty [label="...", shape="plaintext"];
+			color=none;
+		}
+
+		subgraph clusterT {
+			inputT [label="input"];
+			hiddenT [label="hidden"];
+			outputT [label="output"];
+			inputT -> hiddenT -> outputT;
+			label="t=T";
+			color=none;
+		}
+
+		hidden0 -> hidden1;
+		hidden1 -> hidden2;
+		hidden2 -> empty;
+		empty -> hiddenT;
+		{rank=same; input0; input1; input2; inputT;}
+		{rank=same; hidden0; hidden1; hidden2;empty;hiddenT;}
+		{rank=same; output0; output1; output2;outputT;}
+
+	}
+
+}
