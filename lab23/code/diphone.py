@@ -27,7 +27,7 @@ def load_lab(fn, dpd, ref):
 	for i in range(1, len(phones)-1):
 		bip = phones[i][0]+'-'+phones[i+1][0]
 		biphones.append([bip, [phones[t][1] for t in range(i-1, i+2)]])
-	fn = re.sub('lab', 'wav', fn)
+	fn = re.sub('\.lab$', '.wav', fn)
 	for bip, [bt, mt, et] in biphones:
 		if bip in ref:
 			bip_fn, (bip_b, bip_e) = ref[bip]
