@@ -1,0 +1,28 @@
+digraph G {
+	rankdir = LR;
+	start [label="<s>"];
+	ps1 [label="a0254_0"];
+	ps2 [label="b0302_7"];
+	si1 [label="a0408_41"];
+	si2 [label="a0438_4"];
+	si3 [label="b0471_20"];
+	ip1 [label="a0438_5"];
+	ip2 [label="a0077_16"];
+	end [label="</s>"];
+	start -> ps1;
+	start -> ps2;
+	ps1 -> si1;
+	ps1 -> si2;
+	ps1 -> si3;
+	ps2 -> si1;
+	ps2 -> si2;
+	ps2 -> si3;
+	si1 -> ip1;
+	si1 -> ip2;
+	si2 -> ip1;
+	si2 -> ip2;
+	si3 -> ip1;
+	si3 -> ip2;
+	ip1 -> end;
+	ip2 -> end;
+}
