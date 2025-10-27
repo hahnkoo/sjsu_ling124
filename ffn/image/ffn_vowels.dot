@@ -1,0 +1,32 @@
+digraph NN {
+rankdir=BT;
+n_0_0 [label="F1" shape="circle"];
+n_0_1 [label="F2" shape="circle"];
+n_1_0 [label="h3" shape="circle"];
+n_1_1 [label="h4" shape="circle"];
+n_1_2 [label="h1" shape="circle"];
+n_1_3 [label="h2" shape="circle"];
+n_2_0 [label="aa" shape="circle"];
+n_2_1 [label="iy" shape="circle"];
+n_2_2 [label="uw" shape="circle"];
+n_0_0 -> n_1_0;
+n_0_1 -> n_1_0;
+n_0_0 -> n_1_1;
+n_0_1 -> n_1_1;
+n_0_0 -> n_1_2;
+n_0_1 -> n_1_2;
+n_0_0 -> n_1_3;
+n_0_1 -> n_1_3;
+n_1_0 -> n_2_0;
+n_1_1 -> n_2_0;
+n_1_2 -> n_2_0;
+n_1_3 -> n_2_0;
+n_1_0 -> n_2_1;
+n_1_1 -> n_2_1;
+n_1_2 -> n_2_1;
+n_1_3 -> n_2_1;
+n_1_0 -> n_2_2;
+n_1_1 -> n_2_2;
+n_1_2 -> n_2_2;
+n_1_3 -> n_2_2;
+}
