@@ -1,0 +1,6 @@
+digraph G {
+x1 -> update [label="-3"];
+x2 -> update [label="-4"];
+h1 -> update [label="1"];
+h2 -> update [label="2"];
+}

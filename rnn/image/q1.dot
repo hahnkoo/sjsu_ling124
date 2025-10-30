@@ -1,0 +1,18 @@
+digraph G {
+rankdir=LR;
+x1 [label="x1", shape="circle"];
+x2 [label="x2", shape="circle"];
+h1 [label="h1", shape="circle"];
+h2 [label="h2", shape="circle"];
+y [label="y", shape="circle"];
+x1 -> h1 [label="2"];
+x2 -> h1 [label="-1"];
+x1 -> h2 [label="-3"];
+x2 -> h2 [label="4"];
+h1 -> h1 [label="3"];
+h1 -> h2 [label="2"];
+h2 -> h1 [label="1"];
+h2 -> h2 [label="-1"];
+h1 -> y [label="0.5"];
+h2 -> y [label="-0.3"];
+}

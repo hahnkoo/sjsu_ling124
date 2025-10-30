@@ -1,0 +1,33 @@
+digraph G {
+	rankdir=BT;
+	node [height=.1];
+	subgraph{
+
+		subgraph cluster0 {
+			x1 [label="x1"];
+			x2 [label="x2"];
+			color=none;
+		}
+
+		subgraph cluster1 {
+			h1 [label="h1"];
+			h2 [label="h2"];
+			h1 -> h1; h1 -> h2;
+			h2 -> h1; h2 -> h2;
+			color=none;
+		}
+
+		subgraph cluster2 {
+			y [label="y"];
+			color=none;
+		}
+
+		x1 -> h1; x1 -> h2;
+		x2 -> h1; x2 -> h2;
+		h1 -> y; h2 -> y;
+		{rank=same; x1; h1; y;}
+		{rank=same; x2; h2;}
+
+	}
+
+}
