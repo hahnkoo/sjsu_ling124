@@ -6,6 +6,7 @@ All HMM entry/exit states are non-emitting. A word must emit >= 1 frame.
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from math import log
+from heapq import nlargest
 import numpy as np
 
 
@@ -137,18 +138,24 @@ class DynamicTrellis:
 	a new word begins. This prevents invalid merging of different histories.
 	"""
 	def __init__(self, network, lm=None, lm_weight=1.0,
-			beam_width=None, max_active=None):
+			beam_width=None, max_active=None, max_boundary_histories=None):
 		"""Configure optional pruning of each completed Viterbi column.
 
 		beam_width: keep scores >= best score minus this value (log units).
 		max_active: keep at most this many highest-scoring hypotheses.
-		Both default to None (exact, unpruned Viterbi search).
+		max_boundary_histories: limit distinct word-boundary histories expanded.
+		All default to None (exact, unpruned Viterbi search).
 		"""
 		if beam_width is not None and (not np.isfinite(beam_width) or beam_width < 0):
 			raise ValueError('beam_width must be finite and nonnegative')
 		if max_active is not None and (isinstance(max_active, bool) or
 				not isinstance(max_active, (int, np.integer)) or max_active < 1):
 			raise ValueError('max_active must be a positive integer')
+		if max_boundary_histories is not None and (isinstance(max_boundary_histories, bool) or
+				not isinstance(max_boundary_histories, (int, np.integer)) or max_boundary_histories < 1):
+			raise ValueError('max_boundary_histories must be a positive integer')
+		self.max_boundary_histories = max_boundary_histories
+		self._lm_logprob_cache = {}
 		self.beam_width = beam_width
 		self.max_active = max_active
 		self.network = network
@@ -184,7 +191,6 @@ class DynamicTrellis:
 			cutoff = best - self.beam_width
 			col = {key: item for key, item in col.items() if item[0] >= cutoff}
 		if self.max_active is not None and len(col) > self.max_active:
-			from heapq import nlargest
 			col = dict(nlargest(self.max_active, col.items(),
 				key=lambda pair: pair[1][0]))
 		return col
@@ -194,7 +200,10 @@ class DynamicTrellis:
 
 	def _new_word(self, history, word):
 		if self.lm:
-			return (self.lm_weight * self.lm.logprob(word, history),
+			key = (history, word)
+			if key not in self._lm_logprob_cache:
+				self._lm_logprob_cache[key] = self.lm.logprob(word, history)
+			return (self.lm_weight * self._lm_logprob_cache[key],
 					self.lm.advance(history, word))
 		return (-log(len(self.network.words)), ())
 
@@ -242,6 +251,11 @@ class DynamicTrellis:
 			candidate = score + net.exit_logprob[state]
 			if history not in best_ends or candidate > best_ends[history][0]:
 				best_ends[history] = (candidate, (state, history))
+		boundary_histories_before_pruning = len(best_ends)
+		if (self.max_boundary_histories is not None and
+				len(best_ends) > self.max_boundary_histories):
+			best_ends = dict(nlargest(self.max_boundary_histories,
+				best_ends.items(), key=lambda item: item[1][0]))
 		for history, (score, predecessor) in best_ends.items():
 			for state, entry_lp in net.starts:
 				word = net.start_word[state]
@@ -263,7 +277,9 @@ class DynamicTrellis:
 		self.columns.append(col)
 		self.stats.append({'frame':len(self.columns)-1, 'active':len(col),
 				'transitions_considered':count,
-				'active_before_pruning':unpruned})
+				'active_before_pruning':unpruned,
+				'boundary_histories_before_pruning':boundary_histories_before_pruning,
+				'boundary_histories_expanded':len(best_ends)})
 		return col
 
 	def build_viterbi(self, features):
