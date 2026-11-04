@@ -136,7 +136,21 @@ class DynamicTrellis:
 	The LM history contains words preceding the current word, updated when
 	a new word begins. This prevents invalid merging of different histories.
 	"""
-	def __init__(self, network, lm=None, lm_weight=1.0):
+	def __init__(self, network, lm=None, lm_weight=1.0,
+			beam_width=None, max_active=None):
+		"""Configure optional pruning of each completed Viterbi column.
+
+		beam_width: keep scores >= best score minus this value (log units).
+		max_active: keep at most this many highest-scoring hypotheses.
+		Both default to None (exact, unpruned Viterbi search).
+		"""
+		if beam_width is not None and (not np.isfinite(beam_width) or beam_width < 0):
+			raise ValueError('beam_width must be finite and nonnegative')
+		if max_active is not None and (isinstance(max_active, bool) or
+				not isinstance(max_active, (int, np.integer)) or max_active < 1):
+			raise ValueError('max_active must be a positive integer')
+		self.beam_width = beam_width
+		self.max_active = max_active
 		self.network = network
 		self.lm = lm
 		self.lm_weight = float(lm_weight)
@@ -156,6 +170,24 @@ class DynamicTrellis:
 	def _offer(col, key, score, previous, boundary):
 		if np.isfinite(score) and (key not in col or score > col[key][0]):
 			col[key] = (score, previous, boundary)
+
+	def _prune(self, col):
+		"""Prune a scored column before it is used for the next expansion.
+
+		This preserves all backpointers to earlier (possibly pruned) columns:
+		we only prune the newly constructed column, never old columns.
+		"""
+		if not col or (self.beam_width is None and self.max_active is None):
+			return col
+		if self.beam_width is not None:
+			best = max(item[0] for item in col.values())
+			cutoff = best - self.beam_width
+			col = {key: item for key, item in col.items() if item[0] >= cutoff}
+		if self.max_active is not None and len(col) > self.max_active:
+			from heapq import nlargest
+			col = dict(nlargest(self.max_active, col.items(),
+				key=lambda pair: pair[1][0]))
+		return col
 
 	def _start_context(self):
 		return self.lm.start if self.lm else ()
@@ -180,9 +212,12 @@ class DynamicTrellis:
 			self._offer(col, key, score, None, True)
 		if not col:
 			raise RuntimeError('No starting states reachable')
+		unpruned = len(col)
+		col = self._prune(col)
 		self.columns.append(col)
 		self.stats.append({'frame':0, 'active':len(col),
-				'transitions_considered':len(self.network.starts)})
+				'transitions_considered':len(self.network.starts),
+				'active_before_pruning':unpruned})
 		return col
 
 	def add_column(self, frame):
@@ -223,9 +258,12 @@ class DynamicTrellis:
 			self._offer(col, key, score, predecessor, boundary)
 		if not col:
 			raise RuntimeError(f'No states reachable at frame {len(self.columns)}')
+		unpruned = len(col)
+		col = self._prune(col)
 		self.columns.append(col)
 		self.stats.append({'frame':len(self.columns)-1, 'active':len(col),
-				'transitions_considered':count})
+				'transitions_considered':count,
+				'active_before_pruning':unpruned})
 		return col
 
 	def build_viterbi(self, features):
